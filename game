@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lunar Clicker — משחק קליקר ירחי</title>
+  <meta name="description" content="קליקרים, שדרוגים, אוטו-מיינרים ושימור מתקדם. משחק קליקר ירחי מקורי." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --panel: #121826;
+      --panel-2: #161e2e;
+      --text: #e8f0ff;
+      --muted: #a9b7d9;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --good: #34d399;
+      --warn: #fbbf24;
+      --bad: #f87171;
+      --btn: #1f2937;
+      --btn-hover: #263245;
+      --border: #233044;
+      --shadow: rgba(0,0,0,0.35);
+      --glow: rgba(125, 211, 252, 0.25);
+    }
+    [data-theme="light"] {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-2: #f0f4fa;
+      --text: #0b1220;
+      --muted: #425b7e;
+      --accent: #0ea5e9;
+      --accent-2: #6d28d9;
+      --good: #059669;
+      --warn: #a16207;
+      --bad: #dc2626;
+      --btn: #e7eef7;
+      --btn-hover: #dbe6f4;
+      --border: #d1deec;
+      --shadow: rgba(0,0,0,0.08);
+      --glow: rgba(14, 165, 233, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Heebo", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 80% -20%, rgba(167,139,250,0.15) 0%, transparent 35%),
+                  radial-gradient(900px 600px at 10% 110%, rgba(125,211,252,0.12) 0%, transparent 40%),
+                  var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0)) ;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .moon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #fff 0%, #e3ecff 35%, #bcd4ff 70%, #9eb8e0 100%);
+      box-shadow: 0 0 24px var(--glow), inset 0 0 12px rgba(255,255,255,0.35);
+      position: relative;
+    }
+    .moon:after {
+      content: "";
+      position: absolute;
+      top: 10px; left: 12px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(0,0,0,0.15);
+      box-shadow: 10px 6px 0 rgba(0,0,0,0.12), -6px -2px 0 rgba(0,0,0,0.08);
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--btn);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform .05s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+      font-weight: 600;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+    .btn:hover { background: var(--btn-hover); }
+    .btn:active { transform: translateY(1px); }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px var(--shadow);
+      padding: 18px;
+    }
+    .panel h2 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+    }
+    .muted { color: var(--muted); }
+
+    .click-zone {
+      display: grid;
+      place-items: center;
+      gap: 16px;
+      padding: 18px;
+      text-align: center;
+    }
+    .big-button {
+      width: 220px; height: 220px; border-radius: 50%;
+      background: radial-gradient(circle at 50% 35%, #fff 0%, #eaf2ff 35%, #cfe2ff 70%, #b8d0f0 100%);
+      border: 2px solid #bed7ff;
+      box-shadow: 0 20px 40px var(--glow), inset 0 0 20px rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: transform .08s ease, box-shadow .2s ease;
+      position: relative;
+    }
+    .big-button:hover { transform: translateY(-2px) scale(1.02); }
+    .big-button:active { transform: translateY(2px) scale(0.98); }
+    .big-button .label {
+      position: absolute;
+      bottom: 16px; left: 0; right: 0;
+      font-weight: 800;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .stat {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .stat .v { font-size: 22px; font-weight: 800; }
+    .stat .k { font-size: 12px; color: var(--muted); }
+
+    .shop {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+    .item.disabled { opacity: 0.6; }
+    .item-title { font-weight: 700; }
+    .item-desc { font-size: 12px; color: var(--muted); }
+    .price { font-weight: 700; color: var(--warn); }
+    .owned { font-size: 12px; color: var(--muted); }
+
+    .footer {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 10px;
+      box-shadow: 0 8px 22px var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+      pointer-events: auto;
+    }
+    .tiny { font-size: 11px; }
+
+    /* simple pulse for gains */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+    .pulse { animation: pulse .18s ease; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="moon" aria-hidden="true"></div>
+      <div>Lunar Clicker</div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="themeBtn" aria-label="החלפת מצב תצוגה">מצב בהיר/כהה</button>
+      <button class="btn" id="soundBtn" aria-label="הפעלת צלילים">צלילים: כבוי</button>
+      <button class="btn" id="resetBtn" aria-label="איפוס משחק">איפוס</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <h2>אזור קליקים</h2>
+      <div class="click-zone">
+        <div class="stats">
+          <div class="stat">
+            <div class="v" id="currency">0</div>
+            <div class="k">אבני ירח</div>
+          </div>
+          <div class="stat">
+            <div class="v" id="perClick">1</div>
+            <div class="k">לכל קליק</div>
+          </div>
+          <div class="stat">
+            <div class="v" id="perSec">0</div>
+            <div class="k">לשנייה</div>
+          </div>
+        </div>
+
+        <button class="big-button" id="bigBtn" aria-label="קליק כדי לכרות אבני ירח">
+          <span class="label">קליק!</span>
+        </button>
+        <div class="muted tiny">טיפ: שדרוגים מעלים רווח לכל קליק ולשנייה. פרסטיז' מאפס אבל נותן בונוס קבוע.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>חנות ושדרוגים</h2>
+      <div class="shop" id="shop"></div>
+
+      <div class="footer">
+        <div>פרסטיז' נותן בונוס קבוע של 10% לכל הרווחים.</div>
+        <button class="btn" id="prestigeBtn">פרסטיז' (עלות: 10,000)</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">נשמר!</div>
+
+  <script>
+    // ---- Core state ----
+    const state = {
+      currency: 0,
+      perClick: 1,
+      perSec: 0,
+      prestige: 0, // each prestige = +10% multiplier
+      items: [
+        {
+          id: 'pick',
+          name: 'מכוש ירחי',
+          desc: 'מעלה את הרווח לכל קליק ב-+1.',
+          baseCost: 15,
+          owned: 0,
+          type: 'click',
+          effect: 1
+        },
+        {
+          id: 'drill',
+          name: 'מקדח אוטומטי',
+          desc: 'מוסיף +1 לשנייה.',
+          baseCost: 50,
+          owned: 0,
+          type: 'sec',
+          effect: 1
+        },
+        {
+          id: 'lab',
+          name: 'מעבדת שדרוג',
+          desc: 'מכפילה את הרווח לכל קליק (x2).',
+          baseCost: 250,
+          owned: 0,
+          type: 'mult-click',
+          effect: 2
+        },
+        {
+          id: 'rover',
+          name: 'רובר כרייה',
+          desc: 'מוסיף +5 לשנייה.',
+          baseCost: 800,
+          owned: 0,
+          type: 'sec',
+          effect: 5
+        },
+        {
+          id: 'array',
+          name: 'מערך כרייה',
+          desc: 'מכפיל את הרווח לשנייה (x2).',
+          baseCost: 2500,
+          owned: 0,
+          type: 'mult-sec',
+          effect: 2
+        }
+      ]
+    };
+
+    // ---- Helpers ----
+    const fmt = n => {
+      if (n < 1000) return n.toFixed(0);
+      const units = ['K','M','B','T','Q'];
+      let u = -1;
+      let v = n;
+      while (v >= 1000 && u < units.length-1) { v/=1000; u++; }
+      return v.toFixed(2) + units[u];
+    };
+
+    const prestigeMult = () => 1 + state.prestige * 0.10;
+
+    const save = () => {
+      localStorage.setItem('lunar-save', JSON.stringify(state));
+      showToast('נשמר!');
+    };
+    const load = () => {
+      const raw = localStorage.getItem('lunar-save');
+      if (!raw) return;
+      try {
+        const s = JSON.parse(raw);
+        // Defensive merge
+        ['currency','perClick','perSec','prestige'].forEach(k => {
+          if (typeof s[k] === 'number') state[k] = s[k];
+        });
+        if (Array.isArray(s.items)) {
+          state.items.forEach(it => {
+            const found = s.items.find(x => x.id === it.id);
+            if (found) it.owned = found.owned ?? 0;
+          });
+        }
+      } catch(e) { console.warn('load failed', e); }
+    };
+
+    // ---- UI bindings ----
+    const els = {
+      currency: document.getElementById('currency'),
+      perClick: document.getElementById('perClick'),
+      perSec: document.getElementById('perSec'),
+      bigBtn: document.getElementById('bigBtn'),
+      shop: document.getElementById('shop'),
+      prestigeBtn: document.getElementById('prestigeBtn'),
+      themeBtn: document.getElementById('themeBtn'),
+      soundBtn: document.getElementById('soundBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      toast: document.getElementById('toast')
+    };
+
+    const sounds = {
+      enabled: false,
+      click: new Audio('data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABABAAACAAACaGZmZmZm'), // tiny placeholder
+      buy: new Audio('data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABABAAACAAACaGZmZmZm'),
+    };
+
+    const showToast = (msg) => {
+      els.toast.textContent = msg;
+      els.toast.classList.add('show');
+      setTimeout(() => els.toast.classList.remove('show'), 1200);
+    };
+
+    // ---- Shop rendering ----
+    const calcCost = (base, owned) => Math.floor(base * Math.pow(1.15, owned));
+    const renderShop = () => {
+      els.shop.innerHTML = '';
+      state.items.forEach(it => {
+        const cost = calcCost(it.baseCost, it.owned);
+        const can = state.currency >= cost;
+        const div = document.createElement('div');
+        div.className = 'item' + (can ? '' : ' disabled');
+
+        const left = document.createElement('div');
+        const t = document.createElement('div');
+        t.className = 'item-title';
+        t.textContent = it.name;
+
+        const d = document.createElement('div');
+        d.className = 'item-desc';
+        d.textContent = it.desc;
+
+        const o = document.createElement('div');
+        o.className = 'owned';
+        o.textContent = `בבעלות: ${it.owned}`;
+
+        left.appendChild(t); left.appendChild(d); left.appendChild(o);
+
+        const right = document.createElement('div');
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = `קנה (${fmt(cost)})`;
+        btn.disabled = !can;
+        btn.addEventListener('click', () => buyItem(it.id));
+
+        right.appendChild(btn);
+
+        div.appendChild(left);
+        div.appendChild(right);
+
+        els.shop.appendChild(div);
+      });
+    };
+
+    // ---- Game logic ----
+    const updateDerived = () => {
+      // Base derived from items
+      let baseClick = 1;
+      let baseSec = 0;
+      state.items.forEach(it => {
+        if (it.type === 'click') baseClick += it.effect * it.owned;
+        if (it.type === 'sec') baseSec += it.effect * it.owned;
+        if (it.type === 'mult-click') baseClick *= Math.pow(it.effect, it.owned);
+        if (it.type === 'mult-sec') baseSec *= Math.pow(it.effect, it.owned);
+      });
+      state.perClick = Math.max(1, Math.floor(baseClick));
+      state.perSec = Math.max(0, Math.floor(baseSec));
+    };
+
+    const addCurrency = (amount) => {
+      const gain = amount * prestigeMult();
+      state.currency += gain;
+      // pulse
+      els.bigBtn.classList.add('pulse');
+      setTimeout(() => els.bigBtn.classList.remove('pulse'), 180);
+      updateUI();
+    };
+
+    const clickGain = () => addCurrency(state.perClick);
+
+    const buyItem = (id) => {
+      const it = state.items.find(x => x.id === id);
+      if (!it) return;
+      const cost = calcCost(it.baseCost, it.owned);
+      if (state.currency < cost) return;
+      state.currency -= cost;
+      it.owned++;
+      updateDerived();
+      updateUI();
+      if (sounds.enabled) { try { sounds.buy.currentTime = 0; sounds.buy.play(); } catch(e){} }
+      save();
+    };
+
+    const prestige = () => {
+      const cost = 10000;
+      if (state.currency < cost) {
+        showToast('צריך עוד אבני ירח לפרסטיז\'');
+        return;
+      }
+      state.currency -= cost;
+      state.prestige += 1;
+      // reset items and derived
+      state.items.forEach(it => it.owned = 0);
+      updateDerived();
+      updateUI();
+      showToast('פרסטיז\' בוצע! +10% בונוס תמידי');
+      save();
+    };
+
+    const updateUI = () => {
+      els.currency.textContent = fmt(state.currency);
+      els.perClick.textContent = fmt(Math.floor(state.perClick * prestigeMult()));
+      els.perSec.textContent = fmt(Math.floor(state.perSec * prestigeMult()));
+      renderShop();
+    };
+
+    // ---- Tickers ----
+    let secTimer = setInterval(() => {
+      addCurrency(state.perSec);
+    }, 1000);
+
+    // ---- Events ----
+    els.bigBtn.addEventListener('click', () => {
+      clickGain();
+      if (sounds.enabled) { try { sounds.click.currentTime = 0; sounds.click.play(); } catch(e){} }
+    });
+
+    els.prestigeBtn.addEventListener('click', prestige);
+
+    els.themeBtn.addEventListener('click', () => {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+      showToast(isLight ? 'מצב כהה' : 'מצב בהיר');
+      save();
+    });
+
+    els.soundBtn.addEventListener('click', () => {
+      sounds.enabled = !sounds.enabled;
+      els.soundBtn.textContent = `צלילים: ${sounds.enabled ? 'פועל' : 'כבוי'}`;
+      showToast(sounds.enabled ? 'צלילים הופעלו' : 'צלילים כובו');
+      save();
+    });
+
+    els.resetBtn.addEventListener('click', () => {
+      if (!confirm('לאפס את המשחק? פעולה זו תמחק את ההתקדמות.')) return;
+      localStorage.removeItem('lunar-save');
+      location.reload();
+    });
+
+    // ---- Init ----
+    load();
+    updateDerived();
+    updateUI();
+
+    // Persist occasionally
+    setInterval(save, 15000);
+
+    // If first time, set dark theme attribute
+    if (!document.documentElement.getAttribute('data-theme')) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  </script>
+</body>
+</html>
